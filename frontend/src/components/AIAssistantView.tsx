@@ -19,7 +19,10 @@ import {
   TrendingUp,
   Flame,
   CheckCircle2,
-  FileText
+  FileText,
+  Database,
+  Search,
+  Building2
 } from "lucide-react";
 import { 
   api, 
@@ -28,7 +31,10 @@ import {
   ScamExplanationResponse,
   BudgetRecommendationResponse,
   FinancialEducationResponse,
-  PersonalizedGuidanceResponse
+  PersonalizedGuidanceResponse,
+  RAGQueryResponse,
+  OfficialDocumentMetadata,
+  RAGSourceCitation
 } from "@/lib/api";
 
 interface Message {
@@ -39,9 +45,9 @@ interface Message {
 }
 
 export const AIAssistantView: React.FC = () => {
-  // Navigation Modes: 5 Canonical Responsibilities + General Chat
+  // Navigation Modes: RAG Knowledge Base + 5 Canonical Responsibilities + General Chat
   const [activeMode, setActiveMode] = useState<
-    "chat" | "finances" | "scam" | "budget" | "education" | "guidance"
+    "chat" | "rag" | "finances" | "scam" | "budget" | "education" | "guidance"
   >("chat");
 
   // 1. Chat State
@@ -86,6 +92,14 @@ export const AIAssistantView: React.FC = () => {
   const [guidanceExpenses, setGuidanceExpenses] = useState(4250);
   const [guidanceResult, setGuidanceResult] = useState<PersonalizedGuidanceResponse | null>(null);
   const [loadingGuidance, setLoadingGuidance] = useState(false);
+
+  // 7. Phase 12: RAG Knowledge Base State
+  const [ragQuery, setRagQuery] = useState("What is the Golden Hour protocol for Helpline 1930 and how does fund freezing work?");
+  const [ragCategoryFilter, setRagCategoryFilter] = useState<string>("All");
+  const [ragResult, setRagResult] = useState<RAGQueryResponse | null>(null);
+  const [loadingRAG, setLoadingRAG] = useState(false);
+  const [officialDocs, setOfficialDocs] = useState<OfficialDocumentMetadata[]>([]);
+  const [showDocsModal, setShowDocsModal] = useState(false);
 
   // Quick Chat Prompts
   const quickPrompts = [
@@ -224,6 +238,35 @@ export const AIAssistantView: React.FC = () => {
     }
   };
 
+  const handleRunRAGQuery = async (queryToRun?: string, categoryFilter?: string) => {
+    const q = (queryToRun || ragQuery).trim();
+    if (!q) return;
+    setLoadingRAG(true);
+    try {
+      const cat = categoryFilter !== undefined ? categoryFilter : (ragCategoryFilter !== "All" ? ragCategoryFilter : undefined);
+      const res = await api.queryRAG({
+        query: q,
+        top_k: 3,
+        category_filter: cat
+      });
+      setRagResult(res);
+      setRagQuery(q);
+    } catch (err) {
+      console.error("RAG Query failed:", err);
+    } finally {
+      setLoadingRAG(false);
+    }
+  };
+
+  const handleFetchOfficialDocs = async () => {
+    try {
+      const docs = await api.getOfficialDocuments();
+      setOfficialDocs(docs);
+    } catch (err) {
+      console.error("Fetching official documents failed:", err);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
@@ -240,11 +283,11 @@ export const AIAssistantView: React.FC = () => {
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center space-x-2">
                 <span>AI ENGINE</span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">
-                  PHASE 11 (GEMINI)
+                  PHASE 11 & 12 (GEMINI + RAG)
                 </span>
               </h1>
               <p className="text-xs text-slate-400 mt-0.5">
-                Core Cognitive Intelligence: Financial Explanation • Scam Deconstruction • Budgeting • Education • Personalized Guidance
+                Official Regulatory Grounding (pgvector) • Financial Explanation • Scam Deconstruction • Budgeting • Education • Guidance
               </p>
             </div>
           </div>
@@ -252,20 +295,22 @@ export const AIAssistantView: React.FC = () => {
 
         {/* Pipeline Architecture Badge */}
         <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center space-x-1.5 text-[11px] font-mono text-slate-300">
-          <span className="text-cyan-400 font-bold">User</span>
+          <span className="text-amber-400 font-bold">Official Docs</span>
           <span className="text-slate-600">→</span>
-          <span className="text-indigo-400 font-bold">FastAPI</span>
+          <span className="text-indigo-400 font-bold">Loader</span>
           <span className="text-slate-600">→</span>
-          <span className="text-sky-400 font-bold">AI Service</span>
+          <span className="text-sky-400 font-bold">Chunking</span>
           <span className="text-slate-600">→</span>
-          <span className="text-amber-400 font-bold">Gemini</span>
+          <span className="text-purple-400 font-bold">pgvector</span>
           <span className="text-slate-600">→</span>
-          <span className="text-emerald-400 font-bold">Response</span>
+          <span className="text-cyan-400 font-bold">Retriever</span>
+          <span className="text-slate-600">→</span>
+          <span className="text-emerald-400 font-bold">Gemini</span>
         </div>
       </div>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          5 CANONICAL RESPONSIBILITY NAVIGATION TABS
+          CANONICAL NAVIGATION TABS (RAG + 5 RESPONSIBILITIES)
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
         <button
@@ -276,6 +321,20 @@ export const AIAssistantView: React.FC = () => {
         >
           <Bot className="h-3.5 w-3.5" />
           <span>Conversational Copilot</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveMode("rag");
+            if (!ragResult) handleRunRAGQuery();
+            if (officialDocs.length === 0) handleFetchOfficialDocs();
+          }}
+          className={`px-3 py-2 rounded-lg font-semibold transition-all flex items-center space-x-1.5 ${
+            activeMode === "rag" ? "bg-cyan-600 text-white shadow" : "text-slate-400 hover:text-white"
+          }`}
+        >
+          <Database className="h-3.5 w-3.5 text-amber-400" />
+          <span>Official Knowledge Base (RAG)</span>
         </button>
 
         <button
@@ -449,6 +508,295 @@ export const AIAssistantView: React.FC = () => {
               </form>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          PHASE 12 TAB: RAG OFFICIAL KNOWLEDGE BASE & PGVECTOR
+          Official Documents ➔ Document Loader ➔ Chunking ➔ Embeddings ➔
+          Supabase pgvector ➔ Retriever ➔ Gemini ➔ Answer + Sources
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      {activeMode === "rag" && (
+        <div className="space-y-6">
+
+          {/* 5-STEP RAG PIPELINE BANNER */}
+          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <div className="flex items-center space-x-2">
+                <Database className="h-3.5 w-3.5 text-amber-400" />
+                <span>Phase 12 — RAG Knowledge Base Architecture:</span>
+              </div>
+              <span className="text-[10px] text-amber-400 font-mono">Supabase pgvector (768-dim) • Gemini RAG Grounding</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-xs">
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="text-[10px] text-amber-400 font-mono font-bold">STEP 1</span>
+                <div className="font-bold text-white">Official Docs</div>
+                <div className="text-[10px] text-slate-500">8 Domains</div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="text-[10px] text-indigo-400 font-mono font-bold">STEP 2</span>
+                <div className="font-bold text-white">Doc Loader</div>
+                <div className="text-[10px] text-slate-500">Metadata Ingest</div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="text-[10px] text-sky-400 font-mono font-bold">STEP 3</span>
+                <div className="font-bold text-white">Chunking</div>
+                <div className="text-[10px] text-slate-500">550 chars</div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="text-[10px] text-purple-400 font-mono font-bold">STEP 4</span>
+                <div className="font-bold text-white">Embeddings</div>
+                <div className="text-[10px] text-slate-500">768-dim Space</div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="text-[10px] text-cyan-400 font-mono font-bold">STEP 5</span>
+                <div className="font-bold text-white">pgvector</div>
+                <div className="text-[10px] text-slate-500">Cosine (&lt;=&gt;)</div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="text-[10px] text-emerald-400 font-mono font-bold">STEP 6</span>
+                <div className="font-bold text-white">Gemini + RAG</div>
+                <div className="text-[10px] text-slate-500">Answer + Sources</div>
+              </div>
+            </div>
+          </div>
+
+          {/* DOMAIN CATEGORY CHIPS */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <Building2 className="h-3 w-3 text-cyan-400" />
+                <span>Filter by Authoritative Domain:</span>
+              </span>
+              <button
+                onClick={() => {
+                  setShowDocsModal(!showDocsModal);
+                  if (officialDocs.length === 0) handleFetchOfficialDocs();
+                }}
+                className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 flex items-center space-x-1"
+              >
+                <span>{showDocsModal ? "Hide Registry" : "Browse All 8 Official Documents"}</span>
+                <ExternalLink className="h-3 w-3" />
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              {[
+                "All",
+                "Financial literacy",
+                "UPI safety",
+                "Cyber safety",
+                "Banking basics",
+                "Loan terminology",
+                "Insurance basics",
+                "Government schemes",
+                "Official fraud-reporting guidance"
+              ].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setRagCategoryFilter(cat);
+                    handleRunRAGQuery(undefined, cat !== "All" ? cat : undefined);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                    ragCategoryFilter === cat
+                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                      : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ALL DOCUMENTS DIRECTORY MODAL/DRAWER */}
+          {showDocsModal && (
+            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 animate-in fade-in">
+              <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center justify-between border-b border-slate-800 pb-2">
+                <span>Authoritative Official Documents Registry ({officialDocs.length || 8})</span>
+                <span className="text-[10px] text-slate-500 font-mono">RBI • NPCI • CERT-In • I4C • IRDAI • MHA</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                {(officialDocs.length > 0 ? officialDocs : [
+                  { title: "NSFE 2020-2025: 5Cs Framework", source: "Reserve Bank of India (RBI)", category: "Financial literacy", document_type: "Policy Framework", url: "https://rbi.org.in" },
+                  { title: "UPI Security Guidelines", source: "National Payments Corporation of India (NPCI)", category: "UPI safety", document_type: "Operating Standard", url: "https://npci.org.in" },
+                  { title: "Citizen Cyber Defense Advisory", source: "CERT-In & I4C", category: "Cyber safety", document_type: "National Advisory", url: "https://cert-in.org.in" },
+                  { title: "Charter of Customer Rights", source: "Reserve Bank of India (RBI)", category: "Banking basics", document_type: "Master Direction", url: "https://rbi.org.in" },
+                  { title: "Digital Lending & KFS Guidelines", source: "Reserve Bank of India (RBI)", category: "Loan terminology", document_type: "Master Circular", url: "https://rbi.org.in" },
+                  { title: "Policyholders' Interests Norms", source: "IRDAI", category: "Insurance basics", document_type: "Master Circular", url: "https://irdai.gov.in" },
+                  { title: "PMJDY, PMJJBY, PMSBY Schemes", source: "Ministry of Finance", category: "Government schemes", document_type: "Statutory Charter", url: "https://financialservices.gov.in" },
+                  { title: "CFCFRMS Helpline 1930 SOP", source: "Ministry of Home Affairs & I4C", category: "Official fraud-reporting guidance", document_type: "SOP", url: "https://cybercrime.gov.in" }
+                ]).map((doc, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-slate-200 line-clamp-1">{doc.title}</span>
+                      <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 ml-2">
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                    <div className="text-[11px] text-cyan-400 font-medium">{doc.source}</div>
+                    <div className="text-[10px] text-slate-500 font-mono">
+                      Category: {doc.category} • {doc.document_type}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* QUICK PROMPT PILLS */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+              <Sparkles className="h-3 w-3 text-amber-400" />
+              <span>Recommended Statutory Queries:</span>
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                { title: "UPI PIN Golden Rule (NPCI)", q: "What is the NPCI golden rule regarding UPI PINs and QR code scanning?" },
+                { title: "Helpline 1930 Golden Hour (MHA)", q: "What is the Golden Hour protocol for Helpline 1930 and how does fund freezing work?" },
+                { title: "RBI Customer Charter Rights", q: "What protections do I have under the RBI Charter of Customer Rights regarding confidential credentials?" },
+                { title: "IRDAI 30-Day Free-Look Period", q: "What are the rules for the 30-day Free-Look period and claims settlement timelines under IRDAI?" },
+                { title: "Digital Lending KFS Mandate", q: "What is the Key Fact Statement (KFS) mandate under RBI digital lending guidelines?" },
+                { title: "PMJDY Social Security (Govt)", q: "What are the core features and accidental insurance covers of Pradhan Mantri Jan Dhan Yojana (PMJDY)?" }
+              ].map((pr, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setRagQuery(pr.q);
+                    handleRunRAGQuery(pr.q);
+                  }}
+                  className={`p-2.5 rounded-xl text-left border transition-all text-xs ${
+                    ragQuery === pr.q
+                      ? "bg-cyan-500/10 border-cyan-500/50 text-white shadow-sm"
+                      : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                  }`}
+                >
+                  <div className="font-bold text-white truncate">{pr.title}</div>
+                  <div className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">{pr.q}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* SEARCH INPUT */}
+          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+            <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+              <span className="flex items-center space-x-1.5">
+                <Search className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Search Official Knowledge Base:</span>
+              </span>
+              <span className="text-[11px] text-slate-500 font-mono">pgvector Cosine Similarity Search</span>
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={ragQuery}
+                onChange={(e) => setRagQuery(e.target.value)}
+                placeholder="Ask any question about RBI, NPCI, CERT-In, IRDAI, or government schemes..."
+                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+              />
+              <button
+                onClick={() => handleRunRAGQuery()}
+                disabled={loadingRAG}
+                className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-cyan-600/25 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
+              >
+                {loadingRAG ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4 text-amber-300" />}
+                <span>Execute RAG Query</span>
+              </button>
+            </div>
+          </div>
+
+          {/* RAG RESULT: ANSWER + SOURCES */}
+          {ragResult && (
+            <div className="space-y-6">
+
+              {/* ANSWER CARD */}
+              <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                      GEMINI SYNTHESIS
+                    </span>
+                    <span className="text-xs text-slate-300 font-semibold">
+                      Grounded in {ragResult.total_sources_cited} Official Regulatory Documents
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-mono">
+                    Supabase pgvector (cosine)
+                  </div>
+                </div>
+
+                <div className="prose prose-invert max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-wrap text-slate-200">
+                  {ragResult.answer}
+                </div>
+              </div>
+
+              {/* OFFICIAL SOURCES CITATIONS GRID */}
+              <div className="space-y-3">
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+                  <BookOpen className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>Authoritative Sources Cited ({ragResult.sources.length}):</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {ragResult.sources.map((s, i) => (
+                    <div key={i} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2.5 hover:border-slate-700 transition-all">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                            {s.source}
+                          </span>
+                          <h3 className="font-bold text-sm text-white mt-1 line-clamp-1">{s.title}</h3>
+                        </div>
+                        <span className="px-2 py-0.5 rounded text-[11px] font-bold font-mono bg-emerald-500/20 text-emerald-300 shrink-0">
+                          {s.relevance_score}% Match
+                        </span>
+                      </div>
+
+                      {/* Metadata Strip */}
+                      <div className="grid grid-cols-2 gap-1.5 py-1.5 border-y border-slate-800/80 text-[11px] font-mono">
+                        <div>
+                          <span className="text-slate-500">Date:</span> <span className="text-slate-300">{s.publication_date}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Jurisdiction:</span> <span className="text-slate-300">{s.jurisdiction}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Doc Type:</span> <span className="text-slate-300">{s.document_type}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Category:</span> <span className="text-cyan-400">{s.category}</span>
+                        </div>
+                      </div>
+
+                      {/* Excerpt */}
+                      <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
+                        "{s.excerpt}"
+                      </p>
+
+                      {/* Official Link Button */}
+                      <div className="pt-1 flex justify-end">
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 transition-colors"
+                        >
+                          <span>Official Portal Reference</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
         </div>
       )}
 

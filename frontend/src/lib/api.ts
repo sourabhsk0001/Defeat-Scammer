@@ -213,6 +213,41 @@ export interface PersonalizedGuidanceResponse {
   action_phases: string[];
 }
 
+// --- Phase 12: RAG Knowledge Base Interfaces ---
+export interface RAGSourceCitation {
+  source: string;
+  title: string;
+  publication_date: string;
+  update_date?: string;
+  jurisdiction: string;
+  document_type: string;
+  url: string;
+  category: string;
+  relevance_score: number;
+  excerpt: string;
+}
+
+export interface RAGQueryResponse {
+  query: string;
+  answer: string;
+  sources: RAGSourceCitation[];
+  total_sources_cited: number;
+  pipeline_trace: Record<string, any>;
+}
+
+export interface OfficialDocumentMetadata {
+  id: string;
+  category: string;
+  title: string;
+  source: string;
+  publication_date: string;
+  update_date?: string;
+  jurisdiction: string;
+  document_type: string;
+  url: string;
+  content: string;
+}
+
 export interface ActiveThreat {
   id: string;
   title: string;
@@ -404,6 +439,27 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
+    return res.json();
+  },
+  queryRAG: async (data: {
+    query: string;
+    top_k?: number;
+    category_filter?: string;
+  }): Promise<RAGQueryResponse> => {
+    const res = await fetch(`${API_BASE}/rag/query`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  getOfficialDocuments: async (category?: string): Promise<OfficialDocumentMetadata[]> => {
+    const url = category ? `${API_BASE}/rag/documents?category=${encodeURIComponent(category)}` : `${API_BASE}/rag/documents`;
+    const res = await fetch(url);
+    return res.json();
+  },
+  getRAGStats: async (): Promise<any> => {
+    const res = await fetch(`${API_BASE}/rag/stats`);
     return res.json();
   },
   getThreats: async (): Promise<ActiveThreat[]> => {

@@ -61,11 +61,44 @@ KNOWLEDGE_DOCS = [
     }
 ]
 
+from app.services.rag.pipeline import rag_pipeline
+from app.services.rag.documents import OFFICIAL_KNOWLEDGE_DOCUMENTS
+
 class RAGService:
+    """
+    Phase 12 — RAG Service interfacing with the Supabase pgvector pipeline
+    and authoritative official documents knowledge base.
+    """
     def __init__(self):
         self.docs = KNOWLEDGE_DOCS
+        self.pipeline = rag_pipeline
+        self.official_documents = OFFICIAL_KNOWLEDGE_DOCUMENTS
 
     def search_knowledge(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        # Retrieve from pgvector vector store first
+        vector_results = self.pipeline.vector_store.similarity_search(
+            query_embedding=self.pipeline.embedding_engine.get_embedding(query),
+            top_k=top_k
+        )
+        if vector_results:
+            return [
+                {
+                    "id": r["chunk_id"],
+                    "title": f"{r['title']} ({r['source']})",
+                    "category": r["category"],
+                    "content": r["text"],
+                    "recommended_action": f"Reference official {r['document_type']} at {r['url']}",
+                    "relevance_score": r["similarity_score"],
+                    "source": r["source"],
+                    "url": r["url"],
+                    "publication_date": r["publication_date"],
+                    "jurisdiction": r["jurisdiction"],
+                    "document_type": r["document_type"]
+                }
+                for r in vector_results
+            ]
+
+        # Heuristic fallback if vector index returned zero matches
         query_terms = set(re.findall(r"\w+", query.lower()))
         scored_docs = []
 
@@ -73,12 +106,10 @@ class RAGService:
             score = 0
             doc_text = (doc["title"] + " " + doc["content"] + " " + " ".join(doc["keywords"])).lower()
             
-            # Keyword matching score
             for kw in doc["keywords"]:
                 if kw in query.lower():
                     score += 5
             
-            # Term overlap score
             for term in query_terms:
                 if len(term) > 3 and term in doc_text:
                     score += 2
@@ -93,8 +124,12 @@ class RAGService:
                     "relevance_score": min(score * 10, 100)
                 })
 
-        # Sort descending by relevance score
         scored_docs.sort(key=lambda x: x["relevance_score"], reverse=True)
         return scored_docs[:top_k]
 
+    async def answer_with_sources(self, query: str, top_k: int = 3) -> Dict[str, Any]:
+        """Executes full RAG flow: Official Docs ➔ Loader ➔ Chunking ➔ Embeddings ➔ pgvector ➔ Retriever ➔ Gemini ➔ Answer + Sources."""
+        return await self.pipeline.query(user_query=query, top_k=top_k)
+
 rag_service = RAGService()
+

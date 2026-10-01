@@ -289,6 +289,44 @@ class PersonalizedGuidanceResponse(BaseModel):
     security_status: str
     action_phases: List[str]
 
+# --- Phase 12: RAG & Knowledge Base Schemas ---
+class RAGSourceCitation(BaseModel):
+    source: str
+    title: str
+    publication_date: str
+    update_date: Optional[str] = None
+    jurisdiction: str
+    document_type: str
+    url: str
+    category: str
+    relevance_score: float
+    excerpt: str
+
+class RAGQueryRequest(BaseModel):
+    query: str
+    top_k: Optional[int] = 3
+    category_filter: Optional[str] = None
+
+class RAGQueryResponse(BaseModel):
+    query: str
+    answer: str
+    sources: List[RAGSourceCitation]
+    total_sources_cited: int
+    pipeline_trace: Dict[str, Any]
+
+class OfficialDocumentMetadata(BaseModel):
+    id: str
+    category: str
+    title: str
+    source: str
+    publication_date: str
+    update_date: Optional[str] = None
+    jurisdiction: str
+    document_type: str
+    url: str
+    content: str
+
+
 # --- Safety Center, Family Protection & Money Trail ---
 class FamilyMember(BaseModel):
     id: str

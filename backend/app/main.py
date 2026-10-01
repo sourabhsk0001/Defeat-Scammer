@@ -9,7 +9,7 @@ if str(ROOT_DIR) not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, profile, transactions, budgets, scam_detector, ai_assistant, safety_center, financial_management, risk, ml_detection
+from app.api import auth, profile, transactions, budgets, scam_detector, ai_assistant, safety_center, financial_management, risk, ml_detection, rag
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -42,6 +42,11 @@ app.include_router(ml_detection.router)
 # Register Phase 5 Financial Management & Analytics both under /api and top-level
 app.include_router(financial_management.router, prefix=settings.API_V1_STR)
 app.include_router(financial_management.router)
+
+# Register Phase 12 RAG Knowledge Base router
+app.include_router(rag.router, prefix=settings.API_V1_STR)
+app.include_router(rag.router)
+
 
 @app.get("/")
 def root():
