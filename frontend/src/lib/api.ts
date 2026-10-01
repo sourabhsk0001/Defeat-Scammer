@@ -83,6 +83,47 @@ export interface URLAnalysisResult {
   impersonated_brand?: string;
   verdict_summary: string;
   recommended_actions: string[];
+  url_components?: {
+    raw_url: string;
+    normalized_url: string;
+    scheme: string;
+    netloc: string;
+    hostname: string;
+    port?: number | null;
+    is_non_standard_port: boolean;
+    path: string;
+    query: string;
+    has_at_symbol: boolean;
+    has_stacked_protocol: boolean;
+    is_obfuscated_ip: boolean;
+  };
+  domain_analysis?: {
+    subdomain: string;
+    domain: string;
+    suffix: string;
+    registered_domain: string;
+    is_ip_address: boolean;
+    is_punycode: boolean;
+    is_suspicious_tld: boolean;
+    domain_entropy: number;
+    subdomain_entropy: number;
+    is_high_entropy_dga: boolean;
+    subdomain_depth: number;
+    is_deep_subdomain: boolean;
+    impersonated_brand?: string | null;
+    is_brand_spoofing: boolean;
+    found_phish_tokens: string[];
+  };
+  threat_intelligence?: {
+    providers_checked: string[];
+    positive_detections: number;
+    threat_tags: string[];
+    google_safe_browsing: string;
+    virustotal_summary: string;
+    virustotal_positives: number;
+    phishtank_status: string;
+    urlhaus_status: string;
+  };
 }
 
 export interface ScreenshotAnalysisResult {
@@ -458,14 +499,7 @@ export interface ScamShieldScanResult {
   scam_category: string;
   input_type: string;
   extracted_text_clean: string;
-  extracted_urls: Array<{
-    url: string;
-    is_phishing: boolean;
-    risk_score: number;
-    threat_level: string;
-    impersonated_brand?: string;
-    detected_tricks: string[];
-  }>;
+  extracted_urls: Array<URLAnalysisResult>;
   psychological_triggers: string[];
   pipeline_trace: Record<string, any>;
   reporting_advice: string;

@@ -253,7 +253,14 @@ class ScamShieldEngine:
                 "risk_score": res.risk_score,
                 "threat_level": res.threat_level,
                 "impersonated_brand": res.impersonated_brand,
-                "detected_tricks": res.detected_tricks
+                "detected_tricks": res.detected_tricks,
+                "domain_reputation": res.domain_reputation,
+                "ssl_status": res.ssl_status,
+                "verdict_summary": res.verdict_summary,
+                "recommended_actions": res.recommended_actions,
+                "url_components": res.url_components,
+                "domain_analysis": res.domain_analysis,
+                "threat_intelligence": res.threat_intelligence
             })
 
         return inspected_results, has_suspicious

@@ -167,6 +167,10 @@ class URLAnalysisResult(BaseModel):
     impersonated_brand: Optional[str] = None
     verdict_summary: str
     recommended_actions: List[str]
+    url_components: Optional[Dict[str, Any]] = None
+    domain_analysis: Optional[Dict[str, Any]] = None
+    threat_intelligence: Optional[Dict[str, Any]] = None
+
 
 class ScreenshotAnalysisRequest(BaseModel):
     image_base64: Optional[str] = None
