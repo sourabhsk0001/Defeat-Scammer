@@ -86,6 +86,55 @@ class BudgetSummary(BaseModel):
     savings_rate: float
     health_advice: str
 
+# --- Phase 5: Financial Management Schemas ---
+class ExpenseItem(BaseModel):
+    id: str
+    category: str
+    amount: float
+    payment_method: str = "card"
+    date: str
+    notes: Optional[str] = None
+
+class ExpenseCreate(BaseModel):
+    category: str
+    amount: float
+    payment_method: str = "card"
+    notes: Optional[str] = None
+
+class IncomeItem(BaseModel):
+    id: str
+    source: str
+    amount: float
+    frequency: str = "monthly"
+    is_verified: bool = True
+    date: str
+
+class IncomeCreate(BaseModel):
+    source: str
+    amount: float
+    frequency: str = "monthly"
+    is_verified: bool = True
+
+class BudgetCreate(BaseModel):
+    category: str
+    budgeted: float
+
+class GoalItem(BaseModel):
+    id: str
+    title: str
+    target_amount: float
+    current_amount: float
+    target_date: Optional[str] = None
+    category: str = "emergency_fund"
+    status: str = "active"
+
+class GoalCreate(BaseModel):
+    title: str
+    target_amount: float
+    current_amount: float = 0.0
+    target_date: Optional[str] = None
+    category: str = "emergency_fund"
+
 # --- Scam & Threat Detection Schemas ---
 class MessageAnalysisRequest(BaseModel):
     content: str
