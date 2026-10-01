@@ -6,12 +6,28 @@ export interface UserProfile {
   email: string;
   phone: string;
   monthly_income: number;
+  monthly_expenses?: number;
+  age_range?: string;
+  occupation?: string;
+  financial_goal?: string;
+  preferred_language?: string;
   risk_appetite: string;
   protection_tier: string;
   family_members_count: number;
   security_score: number;
   financial_health_score: number;
+  is_onboarded?: boolean;
   created_at: string;
+}
+
+export interface OnboardingPayload {
+  name: string;
+  age_range: string;
+  occupation: string;
+  monthly_income: number;
+  monthly_expenses: number;
+  financial_goal: string;
+  preferred_language: string;
 }
 
 export interface Transaction {
@@ -240,6 +256,34 @@ export const api = {
   },
   getEmergencyGuide: async (scenario: string = "unauthorized_debit"): Promise<EmergencyActionGuide> => {
     const res = await fetch(`${API_BASE}/safety-center/emergency-sos/${scenario}`);
+    return res.json();
+  },
+  signUp: async (data: { email: string; password: string; full_name: string }) => {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  login: async (data: { email: string; password: string }) => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  completeOnboarding: async (data: OnboardingPayload) => {
+    const res = await fetch(`${API_BASE}/auth/onboarding`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  logout: async () => {
+    const res = await fetch(`${API_BASE}/auth/logout`, { method: "POST" });
     return res.json();
   },
 };

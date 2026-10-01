@@ -7,24 +7,47 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class UserSignUp(BaseModel):
+    email: str
+    password: str
+    full_name: str
+
+class OnboardingData(BaseModel):
+    name: str
+    age_range: str
+    occupation: str
+    monthly_income: float
+    monthly_expenses: float
+    financial_goal: str
+    preferred_language: str
+
 class UserProfile(BaseModel):
     id: str = "usr_001"
     name: str = "Alex Morgan"
     email: str = "alex.morgan@guardian.io"
     phone: str = "+1 (555) 234-8901"
     monthly_income: float = 6500.00
+    monthly_expenses: float = 3200.00
+    age_range: str = "26-35"
+    occupation: str = "Software Engineer"
+    financial_goal: str = "Build Emergency Fraud Reserve"
+    preferred_language: str = "English"
     risk_appetite: str = "Moderate"  # Conservative, Moderate, Aggressive
     protection_tier: str = "Ultra Sentinel"
     family_members_count: int = 3
     security_score: int = 88 # 0-100
     financial_health_score: int = 84 # 0-100
+    is_onboarded: bool = True
     created_at: str = "2026-01-15T08:00:00Z"
 
 class ProfileUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     monthly_income: Optional[float] = None
+    monthly_expenses: Optional[float] = None
     risk_appetite: Optional[str] = None
+    financial_goal: Optional[str] = None
+    preferred_language: Optional[str] = None
 
 # --- Transaction & Budget Schemas ---
 class Transaction(BaseModel):

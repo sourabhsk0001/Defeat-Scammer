@@ -10,7 +10,8 @@ import {
   Bot, 
   Users, 
   GitFork, 
-  LifeBuoy
+  LogOut,
+  User
 } from "lucide-react";
 
 interface NavbarProps {
@@ -18,13 +19,17 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   onOpenSOS: () => void;
   backendOnline: boolean;
+  userName?: string;
+  onLogout?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   onOpenSOS,
-  backendOnline
+  backendOnline,
+  userName = "Alex Morgan",
+  onLogout
 }) => {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: Activity },
@@ -49,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-300 bg-clip-text text-transparent">
-                DEFEAT SCAMMER
+                FINACCESS-AI
               </span>
               <div className="flex items-center space-x-1.5 text-[11px] text-slate-400">
                 <span className={`inline-block h-2 w-2 rounded-full ${backendOnline ? "bg-emerald-400 animate-pulse" : "bg-rose-500"}`}></span>
@@ -80,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Action button: EMERGENCY SOS */}
+          {/* Action buttons: User Info, Emergency SOS & Logout */}
           <div className="flex items-center space-x-3">
             <button
               onClick={onOpenSOS}
@@ -89,6 +94,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               <AlertTriangle className="h-4 w-4" />
               <span>EMERGENCY SOS</span>
             </button>
+
+            {userName && (
+              <div className="hidden lg:flex items-center space-x-2 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                <User className="h-3.5 w-3.5 text-cyan-400" />
+                <span className="font-semibold text-slate-200">{userName.split(" ")[0]}</span>
+              </div>
+            )}
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                title="Log Out"
+                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
