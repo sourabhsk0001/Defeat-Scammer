@@ -274,6 +274,10 @@ export const api = {
     });
     return res.json();
   },
+  getDashboardSummary: async () => {
+    const res = await fetch(`${API_BASE}/profile/dashboard-summary`);
+    return res.json();
+  },
   completeOnboarding: async (data: OnboardingPayload) => {
     const res = await fetch(`${API_BASE}/auth/onboarding`, {
       method: "POST",
