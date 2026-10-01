@@ -259,3 +259,53 @@ class MoneyTrailData(BaseModel):
     total_stolen_tracked: float
     recovery_probability: str
     frozen_nodes_count: int
+
+# --- Phase 7: Risk Engine Schemas ---
+class ValidationResult(BaseModel):
+    is_valid: bool
+    errors: List[str] = []
+    sanitized_fields: Dict[str, Any] = {}
+
+class RiskIndicator(BaseModel):
+    rule_id: str
+    flag: str
+    description: str
+    severity: str  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    score_contribution: int
+    category: str = "DETERMINISTIC"
+    metadata: Dict[str, Any] = {}
+
+class RiskEvaluationRequest(BaseModel):
+    amount: float
+    recipient: str
+    title: Optional[str] = None
+    type: str = "debit"
+    category: Optional[str] = "Transfers"
+    channel: Optional[str] = "UPI"
+    location: Optional[str] = "Online / Domestic"
+    timestamp: Optional[str] = None
+    user_id: Optional[str] = "usr_001"
+    force_new_recipient: Optional[bool] = None
+    burst_count_override: Optional[int] = None
+
+class RiskEvaluationResult(BaseModel):
+    transaction_id: str
+    validation: ValidationResult
+    rules_evaluated_count: int
+    risk_indicators: List[RiskIndicator]
+    risk_score: int  # 0 to 100
+    risk_level: str  # "LOW", "MODERATE", "HIGH", "CRITICAL"
+    decision: str  # "APPROVE", "FLAG_REVIEW", "STEP_UP_AUTH", "BLOCK"
+    is_anomaly: bool
+    recommendations: List[str]
+    telemetry: Dict[str, Any] = {}
+
+class DeterministicRuleInfo(BaseModel):
+    rule_id: str
+    name: str
+    category: str
+    severity: str
+    weight: int
+    formula: str
+    description: str
+

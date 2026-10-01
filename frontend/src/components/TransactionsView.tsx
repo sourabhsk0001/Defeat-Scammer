@@ -13,18 +13,21 @@ import {
   ArrowUpRight,
   Filter,
   CheckCircle2,
-  XCircle
+  XCircle,
+  ShieldAlert
 } from "lucide-react";
 import { Transaction, api } from "@/lib/api";
 
 interface TransactionsViewProps {
   transactions: Transaction[];
   onRefresh: () => void;
+  onNavigate?: (tab: string) => void;
 }
 
 export const TransactionsView: React.FC<TransactionsViewProps> = ({
   transactions,
-  onRefresh
+  onRefresh,
+  onNavigate
 }) => {
   const [filterType, setFilterType] = useState<"all" | "anomalies" | "safe">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -107,6 +110,15 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({
         </div>
 
         <div className="flex items-center space-x-2.5">
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate("risk-engine")}
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-xs font-semibold border border-rose-500/40 transition-colors"
+            >
+              <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
+              <span>Risk Engine Studio</span>
+            </button>
+          )}
           <button
             onClick={handleBatchScan}
             disabled={isScanning}

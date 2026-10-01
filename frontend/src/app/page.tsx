@@ -13,6 +13,7 @@ import { AIAssistantView } from "@/components/AIAssistantView";
 import { SafetyCenterView } from "@/components/SafetyCenterView";
 import { MoneyTrailView } from "@/components/MoneyTrailView";
 import { FinancialChartsView } from "@/components/FinancialChartsView";
+import { RiskEngineView } from "@/components/RiskEngineView";
 import { EmergencySOSModal } from "@/components/EmergencySOSModal";
 import { api, UserProfile, Transaction, BudgetSummary } from "@/lib/api";
 import { ShieldCheck } from "lucide-react";
@@ -165,11 +166,13 @@ export default function Home() {
               />
             )}
             {activeTab === "visualizations" && <FinancialChartsView />}
+            {activeTab === "risk-engine" && <RiskEngineView />}
             {activeTab === "scam-shield" && <ScamShieldView />}
             {activeTab === "transactions" && (
               <TransactionsView
                 transactions={transactions}
                 onRefresh={fetchData}
+                onNavigate={(tab) => setActiveTab(tab)}
               />
             )}
             {activeTab === "budget" && (

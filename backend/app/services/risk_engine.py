@@ -1,6 +1,6 @@
-import math
-from typing import List, Dict, Any, Tuple
-from app.models.schemas import Transaction, MoneyTrailData, MoneyTrailNode, MoneyTrailLink
+from typing import Dict, Any, List, Tuple, Optional
+from app.services.deterministic_risk_engine import deterministic_risk_engine
+from app.models.schemas import Transaction, MoneyTrailData, MoneyTrailNode, MoneyTrailLink, RiskEvaluationResult
 
 class RiskEngine:
     HIGH_RISK_KEYWORDS = [
@@ -10,59 +10,25 @@ class RiskEngine:
 
     def analyze_transaction(self, tx: Dict[str, Any], history: List[Dict[str, Any]]) -> Tuple[int, bool, List[str]]:
         """
-        Anomaly Detection & Risk Scoring Algorithm:
-        - Evaluates amount deviations (statistical z-score heuristic)
-        - Off-peak time check (midnight to 5 AM)
-        - High-risk merchant patterns
-        - Micro-transaction probe patterns (< $2 test charges)
+        Runs deterministic rule evaluation pipeline and returns (score, is_anomaly, flags).
         """
-        risk_score = 5
-        risk_flags = []
-        is_anomaly = False
+        res = deterministic_risk_engine.evaluate_transaction(tx, history)
+        flags = [ind.flag for ind in res.risk_indicators]
+        return res.risk_score, res.is_anomaly, flags
 
-        amount = float(tx.get("amount", 0))
-        merchant = str(tx.get("merchant", "")).lower()
-        title = str(tx.get("title", "")).lower()
-        date_str = str(tx.get("date", ""))
-
-        # 1. Check merchant / title keywords
-        for kw in self.HIGH_RISK_KEYWORDS:
-            if kw in merchant or kw in title:
-                risk_score += 35
-                risk_flags.append(f"High-risk beneficiary or keyword match: '{kw}'")
-
-        # 2. Check micro-charge probe (carding attack)
-        if 0.5 <= amount <= 3.0 and ("test" in merchant or "verification" in title.lower()):
-            risk_score += 45
-            risk_flags.append("Suspected micro-charge card validation probe (Carding behavior)")
-
-        # 3. Statistical deviation from baseline history
-        past_amounts = [float(t.get("amount", 0)) for t in history if t.get("type") == "debit" and float(t.get("amount", 0)) > 0]
-        if past_amounts:
-            mean = sum(past_amounts) / len(past_amounts)
-            variance = sum((x - mean) ** 2 for x in past_amounts) / max(1, len(past_amounts))
-            std_dev = math.sqrt(variance)
-
-            if std_dev > 0:
-                z_score = (amount - mean) / std_dev
-                if z_score > 2.5 and amount > 500:
-                    risk_score += 30
-                    risk_flags.append(f"Statistical Anomaly: Amount (${amount:.2f}) is {z_score:.1f} standard deviations above historical mean (${mean:.2f})")
-            elif amount > (mean * 4) and amount > 500:
-                risk_score += 30
-                risk_flags.append(f"Sudden spike: Amount is 4x greater than regular transaction baseline")
-
-        # 4. Off-peak execution check (between 01:00 and 05:00)
-        if any(f"0{hour}:" in date_str or f" 0{hour}:" in date_str for hour in range(1, 6)):
-            risk_score += 15
-            risk_flags.append("High-velocity off-peak execution timestamp (1:00 AM - 5:00 AM)")
-
-        # Cap score
-        risk_score = min(99, max(1, risk_score))
-        if risk_score >= 60:
-            is_anomaly = True
-
-        return risk_score, is_anomaly, risk_flags
+    def evaluate_pipeline(
+        self, 
+        tx: Dict[str, Any], 
+        history: List[Dict[str, Any]], 
+        profile_income: float = 6500.0,
+        simulator_overrides: Optional[Dict[str, Any]] = None
+    ) -> RiskEvaluationResult:
+        """
+        Executes full deterministic risk evaluation pipeline returning structured telemetry.
+        """
+        return deterministic_risk_engine.evaluate_transaction(
+            tx, history, profile_income=profile_income, simulator_overrides=simulator_overrides
+        )
 
     def generate_money_trail(self, victim_name: str = "Alex Morgan") -> MoneyTrailData:
         """Generates an interconnected money trail fraud graph showing mule networks and recovery points."""

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, profile, transactions, budgets, scam_detector, ai_assistant, safety_center, financial_management
+from app.api import auth, profile, transactions, budgets, scam_detector, ai_assistant, safety_center, financial_management, risk
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -26,6 +26,8 @@ app.include_router(budgets.router, prefix=settings.API_V1_STR)
 app.include_router(scam_detector.router, prefix=settings.API_V1_STR)
 app.include_router(ai_assistant.router, prefix=settings.API_V1_STR)
 app.include_router(safety_center.router, prefix=settings.API_V1_STR)
+app.include_router(risk.router, prefix=settings.API_V1_STR)
+app.include_router(risk.router)
 
 # Register Phase 5 Financial Management & Analytics both under /api and top-level
 app.include_router(financial_management.router, prefix=settings.API_V1_STR)

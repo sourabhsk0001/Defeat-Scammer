@@ -294,4 +294,80 @@ export const api = {
     const res = await fetch(`${API_BASE}/auth/logout`, { method: "POST" });
     return res.json();
   },
+  // Phase 7: Risk Engine APIs
+  evaluateRisk: async (data: RiskEvaluationRequest): Promise<RiskEvaluationResult> => {
+    const res = await fetch(`${API_BASE}/risk/evaluate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  getRiskRules: async (): Promise<DeterministicRuleInfo[]> => {
+    const res = await fetch(`${API_BASE}/risk/rules`);
+    return res.json();
+  },
+  simulateRisk: async (data: RiskEvaluationRequest): Promise<RiskEvaluationResult> => {
+    const res = await fetch(`${API_BASE}/risk/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
 };
+
+// --- Phase 7: Risk Engine Interfaces ---
+export interface ValidationResult {
+  is_valid: boolean;
+  errors: string[];
+  sanitized_fields: Record<string, any>;
+}
+
+export interface RiskIndicator {
+  rule_id: string;
+  flag: string;
+  description: string;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  score_contribution: number;
+  category: string;
+  metadata: Record<string, any>;
+}
+
+export interface RiskEvaluationRequest {
+  amount: number;
+  recipient: string;
+  title?: string;
+  type?: string;
+  category?: string;
+  channel?: string;
+  location?: string;
+  timestamp?: string;
+  user_id?: string;
+  force_new_recipient?: boolean;
+  burst_count_override?: number;
+}
+
+export interface RiskEvaluationResult {
+  transaction_id: string;
+  validation: ValidationResult;
+  rules_evaluated_count: number;
+  risk_indicators: RiskIndicator[];
+  risk_score: number;
+  risk_level: "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+  decision: "APPROVE" | "FLAG_REVIEW" | "STEP_UP_AUTH" | "BLOCK";
+  is_anomaly: boolean;
+  recommendations: string[];
+  telemetry: Record<string, any>;
+}
+
+export interface DeterministicRuleInfo {
+  rule_id: string;
+  name: string;
+  category: string;
+  severity: string;
+  weight: number;
+  formula: string;
+  description: string;
+}
+
