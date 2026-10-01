@@ -14,10 +14,9 @@ class RiskScorer:
         self.detector = AnomalyDetector()
 
     def score(self, tx: Dict[str, Any], history: List[Dict[str, Any]]) -> Tuple[int, bool, List[str]]:
-        features = FeaturePipeline.extract_features(tx, history)
-        is_anomaly, anomaly_flags = self.detector.predict(tx, history)
+        is_anomaly, anomaly_flags, features, ml_score = self.detector.predict(tx, history)
         
-        base_score = 5
+        base_score = ml_score
         flags = list(anomaly_flags)
         merchant = str(tx.get("merchant", "")).lower()
         title = str(tx.get("title", "")).lower()
@@ -29,12 +28,8 @@ class RiskScorer:
                 flags.append(f"High-risk beneficiary tag: '{kw}'")
                 break
 
-        # ML anomaly boost
-        if is_anomaly:
-            base_score += 45
-
-        # Off-peak boost
-        if features["is_off_peak"] == 1.0:
+        # Off-peak check using time_of_day
+        if 1.0 <= features.get("time_of_day", 12.0) <= 5.0:
             base_score += 15
 
         final_score = min(99, max(5, base_score))

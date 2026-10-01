@@ -315,6 +315,27 @@ export const api = {
     });
     return res.json();
   },
+  // Phase 8: ML Anomaly Detection APIs
+  detectMLAnomaly: async (data: MLAnomalyDetectionRequest): Promise<MLAnomalyDetectionResult> => {
+    const res = await fetch(`${API_BASE}/ml/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  getMLModelInfo: async (): Promise<MLModelInfo> => {
+    const res = await fetch(`${API_BASE}/ml/model-info`);
+    return res.json();
+  },
+  retrainMLModel: async () => {
+    const res = await fetch(`${API_BASE}/ml/retrain`, { method: "POST" });
+    return res.json();
+  },
+  batchDetectLedger: async () => {
+    const res = await fetch(`${API_BASE}/ml/batch-detect`, { method: "POST" });
+    return res.json();
+  },
 };
 
 // --- Phase 7: Risk Engine Interfaces ---
@@ -370,4 +391,45 @@ export interface DeterministicRuleInfo {
   formula: string;
   description: string;
 }
+
+// --- Phase 8: ML Anomaly Detection Interfaces ---
+export interface MLFeatures {
+  transaction_amount: number;
+  transaction_frequency: number;
+  time_of_day: number;
+  recipient_frequency: number;
+  amount_deviation: number;
+  daily_transaction_count: number;
+}
+
+export interface MLAnomalyDetectionRequest {
+  amount: number;
+  recipient: string;
+  timestamp?: string;
+  type?: string;
+  channel?: string;
+  location?: string;
+  feature_overrides?: Record<string, number>;
+}
+
+export interface MLAnomalyDetectionResult {
+  transaction_id: string;
+  features: MLFeatures;
+  raw_decision_score: number;
+  anomaly_score: number;
+  is_anomaly: boolean;
+  anomaly_flags: string[];
+  confidence_percent: number;
+  model_info: Record<string, any>;
+}
+
+export interface MLModelInfo {
+  model_name: string;
+  n_estimators: number;
+  contamination: number;
+  training_samples_count: number;
+  features_used: string[];
+  algorithm: string;
+}
+
 

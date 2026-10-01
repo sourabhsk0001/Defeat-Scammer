@@ -309,3 +309,40 @@ class DeterministicRuleInfo(BaseModel):
     formula: str
     description: str
 
+# --- Phase 8: ML Anomaly Detection Schemas ---
+class MLFeatures(BaseModel):
+    transaction_amount: float
+    transaction_frequency: float
+    time_of_day: float
+    recipient_frequency: float
+    amount_deviation: float
+    daily_transaction_count: float
+
+class MLAnomalyDetectionRequest(BaseModel):
+    amount: float
+    recipient: str
+    timestamp: Optional[str] = None
+    type: str = "debit"
+    channel: str = "UPI"
+    location: Optional[str] = "Online"
+    feature_overrides: Optional[Dict[str, float]] = None
+
+class MLAnomalyDetectionResult(BaseModel):
+    transaction_id: str
+    features: MLFeatures
+    raw_decision_score: float
+    anomaly_score: int  # 0 to 100
+    is_anomaly: bool
+    anomaly_flags: List[str]
+    confidence_percent: float
+    model_info: Dict[str, Any]
+
+class MLModelInfo(BaseModel):
+    model_name: str = "Scikit-Learn IsolationForest"
+    n_estimators: int = 100
+    contamination: float = 0.08
+    training_samples_count: int
+    features_used: List[str]
+    algorithm: str = "Unsupervised Random Tree Partitioning"
+
+

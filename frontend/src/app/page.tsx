@@ -14,6 +14,7 @@ import { SafetyCenterView } from "@/components/SafetyCenterView";
 import { MoneyTrailView } from "@/components/MoneyTrailView";
 import { FinancialChartsView } from "@/components/FinancialChartsView";
 import { RiskEngineView } from "@/components/RiskEngineView";
+import { MLAnomalyView } from "@/components/MLAnomalyView";
 import { EmergencySOSModal } from "@/components/EmergencySOSModal";
 import { api, UserProfile, Transaction, BudgetSummary } from "@/lib/api";
 import { ShieldCheck } from "lucide-react";
@@ -167,6 +168,7 @@ export default function Home() {
             )}
             {activeTab === "visualizations" && <FinancialChartsView />}
             {activeTab === "risk-engine" && <RiskEngineView />}
+            {activeTab === "ml-anomaly" && <MLAnomalyView />}
             {activeTab === "scam-shield" && <ScamShieldView />}
             {activeTab === "transactions" && (
               <TransactionsView

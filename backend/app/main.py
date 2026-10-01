@@ -1,7 +1,15 @@
+import sys
+from pathlib import Path
+
+# Add project root so root packages like ml/ are seamlessly importable
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, profile, transactions, budgets, scam_detector, ai_assistant, safety_center, financial_management, risk
+from app.api import auth, profile, transactions, budgets, scam_detector, ai_assistant, safety_center, financial_management, risk, ml_detection
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -28,6 +36,8 @@ app.include_router(ai_assistant.router, prefix=settings.API_V1_STR)
 app.include_router(safety_center.router, prefix=settings.API_V1_STR)
 app.include_router(risk.router, prefix=settings.API_V1_STR)
 app.include_router(risk.router)
+app.include_router(ml_detection.router, prefix=settings.API_V1_STR)
+app.include_router(ml_detection.router)
 
 # Register Phase 5 Financial Management & Analytics both under /api and top-level
 app.include_router(financial_management.router, prefix=settings.API_V1_STR)
