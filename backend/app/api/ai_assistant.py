@@ -5,16 +5,46 @@ from app.models.schemas import (
     ScamExplanationRequest, ScamExplanationResponse,
     BudgetRecommendationRequest, BudgetRecommendationResponse,
     FinancialEducationRequest, FinancialEducationResponse,
-    PersonalizedGuidanceRequest, PersonalizedGuidanceResponse
+    PersonalizedGuidanceRequest, PersonalizedGuidanceResponse,
+    AIAssistantQueryRequest, AIAssistantUnifiedResponse
 )
 from app.services.ai_service import ai_service
+from app.services.ai_assistant_service import ai_assistant_service
 
-router = APIRouter(prefix="/ai-assistant", tags=["Phase 11 — AI Engine (Gemini)"])
+router = APIRouter(prefix="/ai-assistant", tags=["Phase 13 — AI Assistant (Unified Sentinel)"])
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ARCHITECTURE:
-# User ➔ FastAPI ➔ AI Service ➔ Gemini ➔ Response
+# ARCHITECTURE (Phase 13):
+#            AI ASSISTANT
+#                 │
+#   ┌─────────────┼─────────────┐
+#   ↓             ↓             ↓
+# Financial      RAG          Safety
+# Calculator   Knowledge      Engine
+#   │             │             │
+#   └─────────────┼─────────────┘
+#                 ↓
+#               Gemini
+#                 ↓
+#           Answer + Sources
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@router.post("/assist", response_model=AIAssistantUnifiedResponse)
+@router.post("/query", response_model=AIAssistantUnifiedResponse)
+async def query_unified_ai_assistant(req: AIAssistantQueryRequest):
+    """
+    Phase 13 — AI Assistant Unified Sentinel.
+    Connects Financial Calculator + RAG Knowledge + Safety Engine ➔ Gemini ➔ Answer + Sources.
+    Flow:
+    Analyze message ➔ Extract URL ➔ Check indicators ➔ Retrieve safety guidance ➔ Gemini explanation ➔ Action steps
+    """
+    history_dicts = [{"role": m.role, "content": m.content} for m in (req.history or [])]
+    return await ai_assistant_service.assist(
+        query=req.query,
+        channel=req.channel or "sms",
+        history=history_dicts,
+        user_context=req.user_context
+    )
 
 @router.post("/chat", response_model=AIChatResponse)
 async def chat_with_assistant(req: AIChatRequest):

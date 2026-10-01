@@ -326,6 +326,34 @@ class OfficialDocumentMetadata(BaseModel):
     url: str
     content: str
 
+# --- Phase 13: Unified AI Assistant Schemas ---
+class AIAssistantSafetyAssessment(BaseModel):
+    is_suspicious: bool
+    risk_level: str  # SAFE, LOW, MEDIUM, HIGH, CRITICAL
+    risk_score: int
+    detected_indicators: List[str]
+    extracted_urls: List[str]
+    scam_category: str
+
+class AIAssistantFinancialResult(BaseModel):
+    calculation_type: str
+    details: Dict[str, Any]
+
+class AIAssistantQueryRequest(BaseModel):
+    query: str
+    channel: Optional[str] = "sms"
+    history: Optional[List[ChatMessage]] = []
+    user_context: Optional[Dict[str, Any]] = None
+
+class AIAssistantUnifiedResponse(BaseModel):
+    query: str
+    answer: str
+    safety_assessment: AIAssistantSafetyAssessment
+    financial_calculations: Optional[AIAssistantFinancialResult] = None
+    sources: List[RAGSourceCitation]
+    action_steps: List[str]
+    pipeline_trace: Dict[str, Any]
+
 
 # --- Safety Center, Family Protection & Money Trail ---
 class FamilyMember(BaseModel):

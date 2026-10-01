@@ -248,6 +248,31 @@ export interface OfficialDocumentMetadata {
   content: string;
 }
 
+// --- Phase 13: Unified AI Assistant Interfaces ---
+export interface AIAssistantSafetyAssessment {
+  is_suspicious: boolean;
+  risk_level: "SAFE" | "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+  risk_score: number;
+  detected_indicators: string[];
+  extracted_urls: string[];
+  scam_category: string;
+}
+
+export interface AIAssistantFinancialResult {
+  calculation_type: string;
+  details: Record<string, any>;
+}
+
+export interface AIAssistantUnifiedResponse {
+  query: string;
+  answer: string;
+  safety_assessment: AIAssistantSafetyAssessment;
+  financial_calculations?: AIAssistantFinancialResult | null;
+  sources: RAGSourceCitation[];
+  action_steps: string[];
+  pipeline_trace: Record<string, any>;
+}
+
 export interface ActiveThreat {
   id: string;
   title: string;
@@ -435,6 +460,19 @@ export const api = {
     risk_alerts_count?: number;
   }): Promise<PersonalizedGuidanceResponse> => {
     const res = await fetch(`${API_BASE}/ai-assistant/personalized-guidance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  assistUnified: async (data: {
+    query: string;
+    channel?: string;
+    history?: { role: string; content: string }[];
+    user_context?: Record<string, any>;
+  }): Promise<AIAssistantUnifiedResponse> => {
+    const res = await fetch(`${API_BASE}/ai-assistant/assist`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
