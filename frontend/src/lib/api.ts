@@ -278,6 +278,10 @@ export const api = {
     const res = await fetch(`${API_BASE}/profile/dashboard-summary`);
     return res.json();
   },
+  getFinancialAnalytics: async () => {
+    const res = await fetch(`${API_BASE}/analytics`);
+    return res.json();
+  },
   completeOnboarding: async (data: OnboardingPayload) => {
     const res = await fetch(`${API_BASE}/auth/onboarding`, {
       method: "POST",

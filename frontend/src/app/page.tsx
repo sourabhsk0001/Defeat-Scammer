@@ -12,6 +12,7 @@ import { BudgetProfileView } from "@/components/BudgetProfileView";
 import { AIAssistantView } from "@/components/AIAssistantView";
 import { SafetyCenterView } from "@/components/SafetyCenterView";
 import { MoneyTrailView } from "@/components/MoneyTrailView";
+import { FinancialChartsView } from "@/components/FinancialChartsView";
 import { EmergencySOSModal } from "@/components/EmergencySOSModal";
 import { api, UserProfile, Transaction, BudgetSummary } from "@/lib/api";
 import { ShieldCheck } from "lucide-react";
@@ -163,6 +164,7 @@ export default function Home() {
                 onOpenSOS={() => setIsSOSOpen(true)}
               />
             )}
+            {activeTab === "visualizations" && <FinancialChartsView />}
             {activeTab === "scam-shield" && <ScamShieldView />}
             {activeTab === "transactions" && (
               <TransactionsView

@@ -169,6 +169,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2 text-xs">
+            <button
+              onClick={() => onNavigate("visualizations")}
+              className="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 font-semibold border border-indigo-500/40 transition-all flex items-center space-x-1"
+            >
+              <TrendingUp className="h-3.5 w-3.5" />
+              <span>Visual Analytics</span>
+            </button>
             <span className="text-slate-400">Health Index:</span>
             <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 font-mono">
               {profile?.financial_health_score || 85}/100 EXCELLENT

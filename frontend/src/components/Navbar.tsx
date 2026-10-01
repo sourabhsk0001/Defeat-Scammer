@@ -11,7 +11,8 @@ import {
   Users, 
   GitFork, 
   LogOut,
-  User
+  User,
+  BarChart3
 } from "lucide-react";
 
 interface NavbarProps {
@@ -33,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: Activity },
+    { id: "visualizations", label: "Analytics & Charts", icon: BarChart3 },
     { id: "scam-shield", label: "Scam Shield", icon: ShieldCheck },
     { id: "transactions", label: "Transactions & ML", icon: CreditCard },
     { id: "budget", label: "Budget & Health", icon: PieChart },
