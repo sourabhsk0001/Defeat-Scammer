@@ -336,6 +336,15 @@ export const api = {
     const res = await fetch(`${API_BASE}/ml/batch-detect`, { method: "POST" });
     return res.json();
   },
+  // Phase 9: Unified Scam Shield API
+  scanScamShield: async (data: ScamShieldScanRequest): Promise<ScamShieldScanResult> => {
+    const res = await fetch(`${API_BASE}/scam-shield/scan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
 };
 
 // --- Phase 7: Risk Engine Interfaces ---
@@ -431,5 +440,37 @@ export interface MLModelInfo {
   features_used: string[];
   algorithm: string;
 }
+
+// --- Phase 9: Unified Scam Shield Interfaces ---
+export interface ScamShieldScanRequest {
+  content: string;
+  input_type: "sms" | "whatsapp" | "email" | "url" | "payment";
+  sender_info?: string;
+  subject?: string;
+}
+
+export interface ScamShieldScanResult {
+  verdict_banner: string;
+  risk_level: "CRITICAL" | "HIGH" | "MODERATE" | "LOW";
+  risk_score: number;
+  indicators: string[];
+  recommended_actions: string[];
+  scam_category: string;
+  input_type: string;
+  extracted_text_clean: string;
+  extracted_urls: Array<{
+    url: string;
+    is_phishing: boolean;
+    risk_score: number;
+    threat_level: string;
+    impersonated_brand?: string;
+    detected_tricks: string[];
+  }>;
+  psychological_triggers: string[];
+  pipeline_trace: Record<string, any>;
+  reporting_advice: string;
+  is_scam: boolean;
+}
+
 
 

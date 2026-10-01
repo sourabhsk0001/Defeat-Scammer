@@ -345,4 +345,27 @@ class MLModelInfo(BaseModel):
     features_used: List[str]
     algorithm: str = "Unsupervised Random Tree Partitioning"
 
+# --- Phase 9: Unified Scam Shield Schemas ---
+class ScamShieldScanRequest(BaseModel):
+    content: str
+    input_type: str = "sms"  # "sms", "whatsapp", "email", "url", "payment"
+    sender_info: Optional[str] = None
+    subject: Optional[str] = None
+
+class ScamShieldScanResult(BaseModel):
+    verdict_banner: str  # "⚠️ Potential Scam", "🚨 Critical Scam Threat", "✓ Verified Low Risk"
+    risk_level: str  # "CRITICAL", "HIGH", "MODERATE", "LOW"
+    risk_score: int  # 0 to 100
+    indicators: List[str]
+    recommended_actions: List[str]
+    scam_category: str
+    input_type: str
+    extracted_text_clean: str
+    extracted_urls: List[Dict[str, Any]] = []
+    psychological_triggers: List[str] = []
+    pipeline_trace: Dict[str, Any] = {}
+    reporting_advice: str
+    is_scam: bool
+
+
 

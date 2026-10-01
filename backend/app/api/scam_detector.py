@@ -3,13 +3,25 @@ from app.models.schemas import (
     MessageAnalysisRequest, MessageAnalysisResult,
     URLAnalysisRequest, URLAnalysisResult,
     ScreenshotAnalysisRequest, ScreenshotAnalysisResult,
-    VoiceAnalysisRequest, VoiceAnalysisResult
+    VoiceAnalysisRequest, VoiceAnalysisResult,
+    ScamShieldScanRequest, ScamShieldScanResult
 )
 from app.services.rag_service import rag_service
 from app.services.url_analyzer import url_analyzer
 from app.services.screenshot_analyzer import screenshot_analyzer
+from app.services.scam_shield_engine import scam_shield_engine
 
 router = APIRouter(prefix="/scam-shield", tags=["Scam Detector Engine"])
+
+@router.post("/scan", response_model=ScamShieldScanResult)
+def scan_unified_scam_shield(req: ScamShieldScanRequest):
+    """
+    Phase 9 — Unified Scam Shield Pipeline:
+    User Input -> Text Extraction -> URL Extraction -> Pattern Detection -> AI Analysis -> Risk Engine -> Explanation
+    Handles: SMS, WhatsApp message, Email, Website URL, Payment message
+    """
+    return scam_shield_engine.scan(req)
+
 
 @router.post("/analyze-message", response_model=MessageAnalysisResult)
 def analyze_message(req: MessageAnalysisRequest):
