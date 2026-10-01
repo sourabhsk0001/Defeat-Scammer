@@ -216,6 +216,79 @@ class AIChatResponse(BaseModel):
     rag_sources: List[Dict[str, Any]] = []
     safety_advisory: Optional[str] = None
 
+# --- Phase 11: AI Engine Responsibilities Schemas ---
+class FinancialExplanationRequest(BaseModel):
+    income: float = 6500.0
+    expenses: float = 4250.0
+    savings: Optional[float] = None
+    savings_rate: Optional[float] = None
+    categories: Optional[Dict[str, float]] = None
+    anomalies_count: int = 0
+    query: Optional[str] = None
+
+class FinancialExplanationResponse(BaseModel):
+    explanation: str
+    health_tier: str
+    health_summary: str
+    metrics_evaluated: Dict[str, Any]
+
+class ScamExplanationRequest(BaseModel):
+    content: str
+    channel: Optional[str] = "SMS"
+    scam_category: Optional[str] = None
+    threat_level: Optional[str] = "HIGH"
+    indicators: Optional[List[str]] = None
+
+class ScamExplanationResponse(BaseModel):
+    scam_explanation: str
+    channel: str
+    category: str
+    threat_level: str
+    golden_rule: str
+    reporting_helpline: str
+
+class BudgetRecommendationRequest(BaseModel):
+    income: float = 6500.0
+    expenses: Optional[List[Dict[str, Any]]] = None
+    current_budgets: Optional[List[Dict[str, Any]]] = None
+    financial_goals: Optional[List[Dict[str, Any]]] = None
+
+class BudgetRecommendationResponse(BaseModel):
+    recommendations: str
+    framework: str
+    monthly_income: float
+    target_allocations: Dict[str, float]
+    category_targets: Dict[str, float]
+    annual_wealth_growth_potential: float
+
+class FinancialEducationRequest(BaseModel):
+    topic: str
+    difficulty_level: Optional[str] = "beginner"
+
+class FinancialEducationResponse(BaseModel):
+    topic: str
+    lesson: str
+    difficulty: str
+    estimated_read_time: str
+
+class PersonalizedGuidanceRequest(BaseModel):
+    name: Optional[str] = "Alex Morgan"
+    age_range: Optional[str] = "26-35"
+    occupation: Optional[str] = "Software Engineer"
+    monthly_income: Optional[float] = 6500.0
+    monthly_expenses: Optional[float] = 4250.0
+    financial_goal: Optional[str] = "Build 6-Month Emergency Fund & First Home Downpayment"
+    preferred_language: Optional[str] = "English"
+    risk_alerts_count: Optional[int] = 0
+
+class PersonalizedGuidanceResponse(BaseModel):
+    name: str
+    goal: str
+    guidance_roadmap: str
+    monthly_surplus: float
+    security_status: str
+    action_phases: List[str]
+
 # --- Safety Center, Family Protection & Money Trail ---
 class FamilyMember(BaseModel):
     id: str

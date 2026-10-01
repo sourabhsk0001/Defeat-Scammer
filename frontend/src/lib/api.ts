@@ -161,6 +161,58 @@ export interface AIChatResponse {
   safety_advisory?: string;
 }
 
+// --- Phase 11: AI Engine Responsibilities Interfaces ---
+export interface FinancialExplanationResponse {
+  explanation: string;
+  health_tier: string;
+  health_summary: string;
+  metrics_evaluated: {
+    income: number;
+    expenses: number;
+    net_savings: number;
+    savings_rate_pct: number;
+    anomalies_detected: number;
+  };
+}
+
+export interface ScamExplanationResponse {
+  scam_explanation: string;
+  channel: string;
+  category: string;
+  threat_level: string;
+  golden_rule: string;
+  reporting_helpline: string;
+}
+
+export interface BudgetRecommendationResponse {
+  recommendations: string;
+  framework: string;
+  monthly_income: number;
+  target_allocations: {
+    needs_50_pct: number;
+    wants_30_pct: number;
+    savings_investments_20_pct: number;
+  };
+  category_targets: Record<string, number>;
+  annual_wealth_growth_potential: number;
+}
+
+export interface FinancialEducationResponse {
+  topic: string;
+  lesson: string;
+  difficulty: string;
+  estimated_read_time: string;
+}
+
+export interface PersonalizedGuidanceResponse {
+  name: string;
+  goal: string;
+  guidance_roadmap: string;
+  monthly_surplus: number;
+  security_status: string;
+  action_phases: string[];
+}
+
 export interface ActiveThreat {
   id: string;
   title: string;
@@ -280,6 +332,77 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, history }),
+    });
+    return res.json();
+  },
+  explainFinances: async (data: {
+    income: number;
+    expenses: number;
+    savings?: number;
+    savings_rate?: number;
+    categories?: Record<string, number>;
+    anomalies_count?: number;
+    query?: string;
+  }): Promise<FinancialExplanationResponse> => {
+    const res = await fetch(`${API_BASE}/ai-assistant/explain-finances`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  explainScam: async (data: {
+    content: string;
+    channel?: string;
+    scam_category?: string;
+    threat_level?: string;
+    indicators?: string[];
+  }): Promise<ScamExplanationResponse> => {
+    const res = await fetch(`${API_BASE}/ai-assistant/explain-scam`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  recommendBudget: async (data: {
+    income: number;
+    expenses?: any[];
+    current_budgets?: any[];
+    financial_goals?: any[];
+  }): Promise<BudgetRecommendationResponse> => {
+    const res = await fetch(`${API_BASE}/ai-assistant/budget-recommendations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  getFinancialEducation: async (data: {
+    topic: string;
+    difficulty_level?: string;
+  }): Promise<FinancialEducationResponse> => {
+    const res = await fetch(`${API_BASE}/ai-assistant/financial-education`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  getPersonalizedGuidance: async (data: {
+    name?: string;
+    age_range?: string;
+    occupation?: string;
+    monthly_income?: number;
+    monthly_expenses?: number;
+    financial_goal?: string;
+    preferred_language?: string;
+    risk_alerts_count?: number;
+  }): Promise<PersonalizedGuidanceResponse> => {
+    const res = await fetch(`${API_BASE}/ai-assistant/personalized-guidance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
     return res.json();
   },
